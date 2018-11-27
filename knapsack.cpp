@@ -8,15 +8,24 @@ using namespace std;
 
 int max (int a, int b) { return (a > b) ? a : b; }
 
-int knapsack(int c, vector<int> v, vector<int> w, int n) {
+int knapsack(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	if( n == 0 || c == 0 )
 		return 0;
 
 	if( w[n - 1] > c )
-		return knapsack(c, v, w, n - 1);
+		return knapsack(c, v, w, n - 1, opt);
 
-	else return max( v[n - 1] + knapsack(c - w[n - 1], v, w, n - 1),
-					 knapsack(c, v, w, n - 1));
+	else {
+		int included = v[n - 1] + knapsack(c - w[n - 1], v, w, n - 1, opt);
+		int excluded = knapsack(c, v, w, n - 1, opt);
+		int subset = max(included, excluded);
+
+		// logic for subsets
+		if ( subset == included)
+			opt.push_back((n - 1) + 1);
+		
+		return subset;
+	}
 }
 
 int main() {
@@ -26,6 +35,7 @@ int main() {
 	int c = 0;
 	vector<int> v;
 	vector<int> w;
+	vector<int> opt;
 
 	string filename;
 	ifstream infile;
@@ -77,7 +87,10 @@ int main() {
 
 	n = v.size();
 
-	cout << "\nDynamic Programming Optimal value: " << knapsack(c, v, w, n);
-	cout << "\nDynamic Programming Optimal subset: " << endl;
+	cout << "\nDynamic Programming Optimal value: " << knapsack(c, v, w, n, opt);
+	cout << "\nDynamic Programming Optimal subset: {" << endl;
+	for(unsigned i = 0; i < opt.size(); ++i)
+		cout << opt[i] << ' ';
+	cout << " }\n";
 	return 0;
 }
