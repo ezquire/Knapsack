@@ -33,7 +33,7 @@ int main() {
 	// Get the capacity of the "knapsack"
 	cout << "Enter file containing the capacity: ";
 	cin >> filename;	
-	infile.open(filename, ios::in);
+	infile.open(filename.c_str(), ios::in);
 	if(infile.fail()) {
 		cout << "Error opening file: " << filename << endl;
 		exit(-1);
@@ -44,7 +44,7 @@ int main() {
 	// Get the weights of the items
 	cout << "Enter file containing the weight: ";
 	cin >> filename;
-	infile.open(filename, ios::in);
+	infile.open(filename.c_str(), ios::in);
 	if(infile.fail()) {
 		cout << "Error opening file: " << filename << endl;
 		exit(-1);
@@ -56,7 +56,7 @@ int main() {
 	// Get the values of the items
 	cout << "Enter file containing the values: ";
 	cin >> filename;
-	infile.open(filename, ios::in);
+	infile.open(filename.c_str(), ios::in);
 	if(infile.fail()) {
 		cout << "Error opening file: " << filename << endl;
 		exit(-1);
