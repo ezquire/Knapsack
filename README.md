@@ -1,5 +1,7 @@
 # Knapsack
-Analysis of the Knapsack problem using brute-force and dynamic programming.
+[![Build Status](https://travis-ci.com/ezquire/Knapsack.svg?branch=master)](https://travis-ci.com/ezquire/Knapsack)
+
+Comparison of the greedy approach versus dynamic programming to solve the Knapsack problem.
 
 ## Group Members
 Tyler Gearing, Darin Brown
