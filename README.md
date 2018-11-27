@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/ezquire/Knapsack.svg?branch=master)](https://travis-ci.com/ezquire/Knapsack)
 # Knapsack
 Analysis of the Knapsack problem using brute-force and dynamic programming.
 
