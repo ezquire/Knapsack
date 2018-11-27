@@ -15,7 +15,7 @@ make
 
 Then you can run the knapsack program from the current directory using the executable
 ```
-./knap <input-filename> <input-filename> <input-filename>
+./knapsack
 ```
 
 Misc
