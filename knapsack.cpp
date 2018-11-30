@@ -9,9 +9,61 @@
 using namespace std;
 using namespace std::chrono;
 
+// Struct for storing value/weight pairs
 struct item {
 	int val, weight;
 };
+
+// Function Prototypes
+int dp(int, vector<int>, vector<int>, int, vector<int>&);
+int greedy(int, vector<item>, vector<int>&);
+void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
+bool cmp(struct item, struct item);
+
+int main() {
+	int n = 0;
+	int c = 0;
+	vector<int> v;
+	vector<int> w;
+	vector<int> opt;
+	vector<item> it;
+
+	getinput(v, w, c, it);
+	
+	cout << "\nKnapsack capacity = " << c;
+	cout << ". Total number of items = ";
+	cout << v.size() << endl;
+	n = v.size();
+
+ 	auto start = high_resolution_clock::now();
+	int res = dp(c, v, w, n, opt);
+	auto end = high_resolution_clock::now();
+	duration<double> time = end - start;
+
+	cout << "\nDynamic Programming Optimal value: " << res;
+	cout << "\nDynamic Programming Optimal subset: {";
+	for(unsigned i = opt.size() - 1; i > 0; --i)
+		cout << opt[i] << ' ';
+	cout << opt[0];
+	cout << "}";
+	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
+
+	opt.resize(0);
+ 	start = high_resolution_clock::now();
+	res = greedy(c, it, opt);
+	end = high_resolution_clock::now();
+	time = end - start;
+	
+	cout << "\nGreedy Approach Optimal value: " << res;
+	cout << "\nGreedy Approach Optimal subset: {";
+	for(unsigned i = 0; i < opt.size() - 1; ++i)
+		cout << opt[i] << ' ';
+	cout << opt[opt.size() - 1];
+	cout << "}";
+	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
+	
+	return 0;
+}
 
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
@@ -52,8 +104,21 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	return k[n][c]; // return the optimal value
 }
 
-int greedy(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
-	return 0;	
+int greedy(int c, vector<item> items, vector<int>& opt) {
+	int total_w = 0;
+	int total_v = 0;
+	sort(items.begin(), items.end(), cmp);
+
+	for(unsigned i = 0; i < items.size(); ++i) {
+		if(total_w + items[i].weight <= c) {
+			total_w += items[i].weight;
+			total_v += items[i].val;
+			opt.push_back(i + 1);
+		}
+		else
+			break;
+	}
+	return total_v;
 }
 
 void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
@@ -110,7 +175,7 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 		exit(-1);
 	}
 
-	// add items if # vals and weights are equal
+	// add item pairs if # vals and weights are equal
 	for(unsigned i = 0; i < v.size(); ++i) {
 		it.val = v[i];
 		it.weight = w[i];
@@ -118,47 +183,10 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 	}
 }
 
-int main() {
-	int n = 0;
-	int c = 0;
-	vector<int> v;
-	vector<int> w;
-	vector<int> opt;
-	vector<item> i;
-
-	getinput(v, w, c, i);
-	
-	cout << "\nKnapsack capacity = " << c;
-	cout << ". Total number of items = ";
-	cout << v.size() << endl;
-	n = v.size();
-
- 	auto start = high_resolution_clock::now();
-	int res = dp(c, v, w, n, opt);
-	auto end = high_resolution_clock::now();
-	duration<double> time = end - start;
-
-	cout << "\nDynamic Programming Optimal value: " << res;
-	cout << "\nDynamic Programming Optimal subset: {";
-	for(unsigned i = opt.size() - 1; i > 0; --i)
-		cout << opt[i] << ' ';
-	cout << opt[0];
-	cout << "}";
-	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
-
-	opt.resize(0);
- 	start = high_resolution_clock::now();
-	cout << "finish this" << endl;
-	end = high_resolution_clock::now();
-	time = end - start;
-	
-	cout << "\nGreedy Approach Optimal value: " << res;
-	/*cout << "\nGreedy Approach Optimal subset: {";
-	for(unsigned i = opt.size() - 1; i > 0; --i)
-		cout << opt[i] << ' ';
-	cout << opt[0];
-	cout << "}";*/
-	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
-	
-	return 0;
+// Utility function for comparing the ratios of value to weight for each item
+bool cmp(struct item a, struct item b) {
+	double r1 = (double)a.val / (double)a.weight;
+	double r2 = (double)b.val / (double)b.weight;
+	//cout << "r1: " << r1 << " r2: " << r2 << endl;
+	return r1 > r2;
 }
