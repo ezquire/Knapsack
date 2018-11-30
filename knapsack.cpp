@@ -9,7 +9,11 @@
 using namespace std;
 using namespace std::chrono;
 
-int knapsack(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
+struct item {
+	int val, weight;
+};
+
+int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
 	int k[n + 1][c + 1];
 
@@ -30,29 +34,33 @@ int knapsack(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	}
 
 	// Backtracking portion to find optimal soln
-	j = c;
-	int res = k[n][c]; //optimal value
-	for(i = n; i > 0 && res > 0; --i) {
-		if(res == k[i - 1][j]) // if the value above in the table is the same
-			continue;          // this value is not included in optimal soln
+	j = c; // start at last column
+	int res = k[n][c]; //optimal value 
+	for(i = n; i > 0 && res > 0; --i) { // start at last row 
+		// if the value in the table above is the same don't add it to soln
+		if(res == k[i - 1][j]) 
+			continue;
 		else {
-			opt.push_back(i); // add item's index to the optimal soln
-			res -= v[i - 1]; // subtract the value from total 
-			j -= w[i - 1];   // subtract the weight from total
+			// add item's index to the optimal soln
+			opt.push_back(i);
+			// subtract the val of the item from optimal val
+			res -= v[i - 1];
+			// subtract the weight of the item from capacity
+			j -= w[i - 1];
 		}
 	}
-	return k[n][c];
+	return k[n][c]; // return the optimal value
 }
 
-int main() {
-	int n = 0;
+int greedy(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
+	return 0;	
+}
+
+void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
+
 	int val = 0;
 	int weight = 0;
-	int c = 0;
-	vector<int> v;
-	vector<int> w;
-	vector<int> opt;
-
+	item it;
 	string filename;
 	ifstream infile;
 
@@ -65,10 +73,15 @@ int main() {
 		exit(-1);
 	}
 	infile >> c;
+	if(c < 1) {
+		cout << "Error: capacity must be > 0\n";
+		infile.close();
+		exit(-1);
+	}
 	infile.close();
 
 	// Get the weights of the items
-	cout << "Enter file containing the weight: ";
+	cout << "Enter file containing the weights: ";
 	cin >> filename;
 	infile.open(filename.c_str(), ios::in);
 	if(infile.fail()) {
@@ -93,35 +106,59 @@ int main() {
 
 	// Check for equal number of values and weights
 	if(v.size() != w.size()) {
-		cout << "Error the number of values and weights must be equal" << endl;
+		cout << "Error: the number of values and weights must be equal\n";
 		exit(-1);
 	}
+
+	// add items if # vals and weights are equal
+	for(unsigned i = 0; i < v.size(); ++i) {
+		it.val = v[i];
+		it.weight = w[i];
+		items.push_back(it);
+	}
+}
+
+int main() {
+	int n = 0;
+	int c = 0;
+	vector<int> v;
+	vector<int> w;
+	vector<int> opt;
+	vector<item> i;
+
+	getinput(v, w, c, i);
 	
 	cout << "\nKnapsack capacity = " << c;
 	cout << ". Total number of items = ";
 	cout << v.size() << endl;
 	n = v.size();
 
-	/*for(unsigned i = 0; i < w.size(); ++i) {
-		cout << "w[" << i <<"]: " << w[i] << endl;
-	}
-
-	for(unsigned i = 0; i < v.size(); ++i) {
-		cout << "v[" << i << "]: " << v[i] << endl;
-		}*/
-
-	auto start = high_resolution_clock::now();
-	int res = knapsack(c, v, w, n, opt);
+ 	auto start = high_resolution_clock::now();
+	int res = dp(c, v, w, n, opt);
 	auto end = high_resolution_clock::now();
-	duration<double> time_dp = end - start;
+	duration<double> time = end - start;
 
 	cout << "\nDynamic Programming Optimal value: " << res;
 	cout << "\nDynamic Programming Optimal subset: {";
 	for(unsigned i = opt.size() - 1; i > 0; --i)
 		cout << opt[i] << ' ';
 	cout << opt[0];
-	cout << "}\n";
-	cout << "Dynamic Programming Time Taken: " << time_dp.count() << endl;
+	cout << "}";
+	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
+
+	opt.resize(0);
+ 	start = high_resolution_clock::now();
+	cout << "finish this" << endl;
+	end = high_resolution_clock::now();
+	time = end - start;
+	
+	cout << "\nGreedy Approach Optimal value: " << res;
+	/*cout << "\nGreedy Approach Optimal subset: {";
+	for(unsigned i = opt.size() - 1; i > 0; --i)
+		cout << opt[i] << ' ';
+	cout << opt[0];
+	cout << "}";*/
+	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	
 	return 0;
 }
