@@ -3,29 +3,45 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <chrono>
+#include <bits/stdc++.h>
 
 using namespace std;
-
-int max (int a, int b) { return (a > b) ? a : b; }
+using namespace std::chrono;
 
 int knapsack(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
-	if( n == 0 || c == 0 )
-		return 0;
+	int i, j;
+	int k[n + 1][c + 1];
 
-	if( w[n - 1] > c )
-		return knapsack(c, v, w, n - 1, opt);
+	// initialize knapsack for DP algorithm
+	for(i = 0; i <= n; ++i)
+		k[i][0] = 0;
+	for(j = 0; j <= c; ++j)
+		k[0][j] = 0;
 
-	else {
-		int included = v[n - 1] + knapsack(c - w[n - 1], v, w, n - 1, opt);
-		int excluded = knapsack(c, v, w, n - 1, opt);
-		int subset = max(included, excluded);
-
-		// logic for subsets
-		if ( subset == included)
-			opt.push_back((n - 1) + 1);
-		
-		return subset;
+	// fill knapsack array with values
+	for(i = 1; i <= n; ++i) {
+		for(j = 1; j <= c; ++j) {
+			if( w[i - 1] <= j )
+				k[i][j] = max( k[i-1][j], (v[i-1] + k[i-1][j - w[i-1]]) );
+			else
+                 k[i][j] = k[i - 1][j];
+		}
 	}
+
+	// Backtracking portion to find optimal soln
+	j = c;
+	int res = k[n][c]; //optimal value
+	for(i = n; i > 0 && res > 0; --i) {
+		if(res == k[i - 1][j]) // if the value above in the table is the same
+			continue;          // this value is not included in optimal soln
+		else {
+			opt.push_back(i); // add item's index to the optimal soln
+			res -= v[i - 1]; // subtract the value from total 
+			j -= w[i - 1];   // subtract the weight from total
+		}
+	}
+	return k[n][c];
 }
 
 int main() {
@@ -84,13 +100,28 @@ int main() {
 	cout << "\nKnapsack capacity = " << c;
 	cout << ". Total number of items = ";
 	cout << v.size() << endl;
-
 	n = v.size();
 
-	cout << "\nDynamic Programming Optimal value: " << knapsack(c, v, w, n, opt);
-	cout << "\nDynamic Programming Optimal subset: {" << endl;
-	for(unsigned i = 0; i < opt.size(); ++i)
+	/*for(unsigned i = 0; i < w.size(); ++i) {
+		cout << "w[" << i <<"]: " << w[i] << endl;
+	}
+
+	for(unsigned i = 0; i < v.size(); ++i) {
+		cout << "v[" << i << "]: " << v[i] << endl;
+		}*/
+
+	auto start = high_resolution_clock::now();
+	int res = knapsack(c, v, w, n, opt);
+	auto end = high_resolution_clock::now();
+	duration<double> time_dp = end - start;
+
+	cout << "\nDynamic Programming Optimal value: " << res;
+	cout << "\nDynamic Programming Optimal subset: {";
+	for(unsigned i = opt.size() - 1; i > 0; --i)
 		cout << opt[i] << ' ';
-	cout << " }\n";
+	cout << opt[0];
+	cout << "}\n";
+	cout << "Dynamic Programming Time Taken: " << time_dp.count() << endl;
+	
 	return 0;
 }
