@@ -10,4 +10,4 @@ knapsack : $(objs)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
 clean :
-	rm knapsack *~ *.o
+	rm knapsack *~ *.o dp* greedy*

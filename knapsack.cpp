@@ -19,6 +19,8 @@ int dp(int, vector<int>, vector<int>, int, vector<int>&);
 int greedy(int, vector<item>, vector<int>&);
 void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
+void graph(int, vector<int>, vector<int>, int, vector<int>&,
+		   vector<item>);
 
 int main() {
 	int n = 0;
@@ -47,8 +49,8 @@ int main() {
 	cout << opt[0];
 	cout << "}";
 	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
+	opt.resize(0); // reset optimal subset vector
 
-	opt.resize(0);
  	start = high_resolution_clock::now();
 	res = greedy(c, it, opt);
 	end = high_resolution_clock::now();
@@ -61,14 +63,17 @@ int main() {
 	cout << opt[opt.size() - 1];
 	cout << "}";
 	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
-	
+	opt.resize(0); // reset optimal subset vector
+
+	graph(c, v, w, n, opt, it);
+
 	return 0;
 }
 
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
 	int k[n + 1][c + 1];
-
+	
 	// initialize knapsack for DP algorithm
 	for(i = 0; i <= n; ++i)
 		k[i][0] = 0;
@@ -84,10 +89,9 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
                  k[i][j] = k[i - 1][j];
 		}
 	}
-
 	// Backtracking portion to find optimal soln
+	int res = k[n][c]; //optimal value
 	j = c; // start at last column
-	int res = k[n][c]; //optimal value 
 	for(i = n; i > 0 && res > 0; --i) { // start at last row 
 		// if the value in the table above is the same don't add it to soln
 		if(res == k[i - 1][j]) 
@@ -183,10 +187,35 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 	}
 }
 
-// Utility function for comparing the ratios of value to weight for each item
+// Ratio comparison utility function
 bool cmp(struct item a, struct item b) {
 	double r1 = (double)a.val / (double)a.weight;
 	double r2 = (double)b.val / (double)b.weight;
-	//cout << "r1: " << r1 << " r2: " << r2 << endl;
 	return r1 > r2;
+}
+
+// Graphing utility function
+void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
+		   vector<item> it) {
+	ofstream dptime;
+	ofstream greedytime;
+	dptime.open("dptime.txt", ios::out);
+	greedytime.open("greedytime.txt", ios::out);
+	vector<item> temp;
+	
+	for(int i = 1; i <= n; ++i) {
+		temp.push_back(it[i - 1]); // Build a larger list as we go
+		auto start = high_resolution_clock::now();
+		dp(c, v, w, i, opt);
+		auto end = high_resolution_clock::now();
+		duration<double> time = end - start;
+		dptime << i << " " << time.count() << endl;
+		opt.resize(0); // Not really necessary but might be best
+
+		start = high_resolution_clock::now();
+		greedy(c, temp, opt);
+		end = high_resolution_clock::now();
+		time = end - start;
+		greedytime << i << " " << time.count() << endl;
+	}
 }
