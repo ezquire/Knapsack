@@ -19,6 +19,8 @@ int dp(int, vector<int>, vector<int>, int, vector<int>&);
 int greedy(int, vector<item>, vector<int>&);
 void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
+void graph(int, vector<int>, vector<int>, int, vector<int>&,
+		   vector<item>);
 
 int main() {
 	int n = 0;
@@ -62,28 +64,9 @@ int main() {
 	cout << "}";
 	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
-	
-	// Graphing
-	ofstream dptime;
-	ofstream greedytime;
-	dptime.open("dptime.txt", ios::out);
-	greedytime.open("greedytime.txt", ios::out);
-	vector<item> temp;
-	
-	for(int i = 1; i <= n; ++i) {
-		temp.push_back(it[i - 1]); // Build a larger list as we go
-		start = high_resolution_clock::now();
-		res = dp(c, v, w, i, opt);
-		end = high_resolution_clock::now();
-		time = end - start;
-		dptime << i << " " << time.count() << endl;
 
-		start = high_resolution_clock::now();
-		res = greedy(c, temp, opt);
-		end = high_resolution_clock::now();
-		time = end - start;
-		greedytime << i << " " << time.count() << endl;
-	}
+	graph(c, v, w, n, opt, it);
+
 	return 0;
 }
 
@@ -204,9 +187,35 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 	}
 }
 
-// Utility function for comparing the ratios of value to weight for each item
+// Ratio comparison utility function
 bool cmp(struct item a, struct item b) {
 	double r1 = (double)a.val / (double)a.weight;
 	double r2 = (double)b.val / (double)b.weight;
 	return r1 > r2;
+}
+
+// Graphing utility function
+void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
+		   vector<item> it) {
+	ofstream dptime;
+	ofstream greedytime;
+	dptime.open("dptime.txt", ios::out);
+	greedytime.open("greedytime.txt", ios::out);
+	vector<item> temp;
+	
+	for(int i = 1; i <= n; ++i) {
+		temp.push_back(it[i - 1]); // Build a larger list as we go
+		auto start = high_resolution_clock::now();
+		dp(c, v, w, i, opt);
+		auto end = high_resolution_clock::now();
+		duration<double> time = end - start;
+		dptime << i << " " << time.count() << endl;
+		opt.resize(0); // Not really necessary but might be best
+
+		start = high_resolution_clock::now();
+		greedy(c, temp, opt);
+		end = high_resolution_clock::now();
+		time = end - start;
+		greedytime << i << " " << time.count() << endl;
+	}
 }
