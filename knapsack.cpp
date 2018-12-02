@@ -11,8 +11,8 @@ using namespace std::chrono;
 
 // Struct for storing value/weight pairs
 struct item {
-	int val, weight;
-	float ratio = val/weight;
+	int val, weight, originalIndex;
+	float ratio;
 };
 
 // Function Prototypes
@@ -22,11 +22,11 @@ void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
 void graph(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
-void heapify (item array[], int n, item i);
-void heapSort (item array[], int n);
-void heapInsert (item array[], item i);
-int heapIndexOf (item array[], item i);
-void heapDeleteMax(item array[]);
+void heapify (vector<item>&, int n, int i);
+void heapSort (vector<item>&, int n);
+void heapInsert (vector<item>&, item i);
+int heapIndexOf (vector<item>, item i);
+vector<item> heapDeleteMax(vector<item> vector);
 
 
 int main() {
@@ -116,19 +116,19 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 }
 
 int greedy(int c, vector<item> items, vector<int>& opt) {
+	int n = items.size();
+	heapSort(items,n);
 	int total_w = 0;
 	int total_v = 0;
-	sort(items.begin(), items.end(), cmp);
-
-	for(unsigned i = 0; i < items.size(); ++i) {
-		if(total_w + items[i].weight <= c) {
-			total_w += items[i].weight;
-			total_v += items[i].val;
-			opt.push_back(i + 1);
+	int k = 0;
+	while (total_w + items[0].weight <= c){
+		total_w += items[0].weight;
+		total_v += items[0].val;
+		k += 1;
+		opt.push_back(items[0].val);
+		items = heapDeleteMax(items);
 		}
-		else
-			break;
-	}
+
 	return total_v;
 }
 
@@ -190,6 +190,7 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 	for(unsigned i = 0; i < v.size(); ++i) {
 		it.val = v[i];
 		it.weight = w[i];
+		it.ratio = v[i]/w[i];
 		items.push_back(it);
 	}
 }
@@ -227,49 +228,50 @@ void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 	}
 }
 
-// i is index of node of heap, n is size of heap, array is the heap
-void heapify(item array[], int n, int i) {
+// i is index of node of heap, n is size of heap, vector is the heap
+void heapify(vector<item>& vector, int n, int i) {
 	int largest = i; // Initialize largest as root
 	int l = 2*i + 1; // left = 2*i + 1
 	int r = 2*i + 2; // right = 2*i + 2
 
 	// If left child is larger than root
-	if (l < n && array[l].ratio > array[largest].ratio)
+	if (l < n && vector[l].ratio > vector[largest].ratio)
 		largest = l;
 	// If right child is larger than largest so far
-	if (r < n && array[r].ratio > array[largest].ratio)
+	if (r < n && vector[r].ratio > vector[largest].ratio)
 		largest = r;
 	// If largest is not root
 	if (largest != i)
 	{
-		swap(array[i], array[largest]);
+		swap(vector[i], vector[largest]);
 		// Recursively heapify the affected sub-tree
-		heapify(array, n, largest);
+		heapify(vector, n, largest);
 	}
 }
 
-// Sort heap - array is heap, n is size of heap
-void heapSort(item array[], int n)
+// Sort heap - vector is heap, n is size of heap
+void heapSort(vector<item>& vector, int n)
 {
 	// make heap
 	for (int i = n / 2 - 1; i >= 0; i--)
-		heapify(array, n, i);
+		heapify(vector, n, i);
 	// One by one extract an element from heap
 	for (int i=n-1; i>=0; i--)
 	{
 		// Move current root to end
-		swap(array[0], array[i]);
+		swap(vector[0], vector[i]);
 		// call max heapify on the reduced heap
-		heapify(array, i, 0);
+		heapify(vector, i, 0);
 	}
 }
 
-/* A utility function to print array of size n */
-void printArray(int arr[], int n)
-{
-	for (int i=0; i<n; ++i)
-		cout << arr[i] << " ";
-	cout << "\n";
+//heap delete Max (index 0)
+vector<item> heapDeleteMax(vector<item> vector){
+	//int s = sizeof(vector);
+	iter_swap(vector.begin(),vector.end());
+	vector.erase(vector.end());
+	heapify(vector, sizeof(vector),0);
+	return vector;
 }
 
 
