@@ -12,6 +12,7 @@ using namespace std::chrono;
 // Struct for storing value/weight pairs
 struct item {
 	int val, weight;
+	float ratio = val/weight;
 };
 
 // Function Prototypes
@@ -21,6 +22,12 @@ void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
 void graph(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
+void heapify (item array[], int n, item i);
+void heapSort (item array[], int n);
+void heapInsert (item array[], item i);
+int heapIndexOf (item array[], item i);
+void heapDeleteMax(item array[]);
+
 
 int main() {
 	int n = 0;
@@ -219,3 +226,56 @@ void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 		greedytime << i << " " << time.count() << endl;
 	}
 }
+
+// i is index of node of heap, n is size of heap, array is the heap
+void heapify(item array[], int n, int i) {
+	int largest = i; // Initialize largest as root
+	int l = 2*i + 1; // left = 2*i + 1
+	int r = 2*i + 2; // right = 2*i + 2
+
+	// If left child is larger than root
+	if (l < n && array[l].ratio > array[largest].ratio)
+		largest = l;
+	// If right child is larger than largest so far
+	if (r < n && array[r].ratio > array[largest].ratio)
+		largest = r;
+	// If largest is not root
+	if (largest != i)
+	{
+		swap(array[i], array[largest]);
+		// Recursively heapify the affected sub-tree
+		heapify(array, n, largest);
+	}
+}
+
+// Sort heap - array is heap, n is size of heap
+void heapSort(item array[], int n)
+{
+	// make heap
+	for (int i = n / 2 - 1; i >= 0; i--)
+		heapify(array, n, i);
+	// One by one extract an element from heap
+	for (int i=n-1; i>=0; i--)
+	{
+		// Move current root to end
+		swap(array[0], array[i]);
+		// call max heapify on the reduced heap
+		heapify(array, i, 0);
+	}
+}
+
+/* A utility function to print array of size n */
+void printArray(int arr[], int n)
+{
+	for (int i=0; i<n; ++i)
+		cout << arr[i] << " ";
+	cout << "\n";
+}
+
+
+
+	//int n = sizeof(arr)/sizeof(arr[0]);
+
+
+
+
