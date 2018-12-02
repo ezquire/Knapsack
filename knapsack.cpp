@@ -11,27 +11,22 @@ using namespace std::chrono;
 
 // Struct for storing value/weight pairs
 struct item {
-	int val, weight, originalIndex;
-	float ratio;
-};
-//Struct for holding vectors to return
-struct vectorHolder{
-    vector<item> heldVector
+	int val, weight;
+	double ratio;
 };
 
 // Function Prototypes
 int dp(int, vector<int>, vector<int>, int, vector<int>&);
-int greedy(int, vector<item>, vector<int>&);
+int greedy(int, vector<item>&, vector<int>&);
 void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
 void graph(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
-void heapify (vector<item>&, int n, int i);
-void heapSort (vector<item>&, int n);
-void heapInsert (vector<item>&, item i);
-int heapIndexOf (vector<item>, item i);
-item heapDeleteMax(vector<item> vector);
-
+void heapify (vector<item>&, int, int);
+void heapSort (vector<item>&, int);
+void heapInsert (vector<item>&, item);
+int heapIndexOf (vector<item>, item);
+item heapDeleteMax(vector<item>&);
 
 int main() {
 	int n = 0;
@@ -62,6 +57,7 @@ int main() {
 	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
 
+	//		graph(c, v, w, n, opt, it);
  	start = high_resolution_clock::now();
 	res = greedy(c, it, opt);
 	end = high_resolution_clock::now();
@@ -75,8 +71,6 @@ int main() {
 	cout << "}";
 	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
-
-	graph(c, v, w, n, opt, it);
 
 	return 0;
 }
@@ -108,31 +102,29 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 		if(res == k[i - 1][j]) 
 			continue;
 		else {
-			// add item's index to the optimal soln
 			opt.push_back(i);
-			// subtract the val of the item from optimal val
-			res -= v[i - 1];
-			// subtract the weight of the item from capacity
-			j -= w[i - 1];
+			res -= v[i - 1]; // subtract value from total
+			j -= w[i - 1];   // subtract weight from total
 		}
 	}
 	return k[n][c]; // return the optimal value
 }
 
-int greedy(int c, vector<item> items, vector<int>& opt) {
+int greedy(int c, vector<item>& items, vector<int>& opt) {
 	int n = items.size();
 	heapSort(items,n);
 	int total_w = 0;
 	int total_v = 0;
-	int k = 0;
-	while (total_w + items[0].weight <= c){
-		total_w += items[0].weight;
-		total_v += items[0].val;
-		k += 1;
-		opt.push_back(items[0].val);
-		items = heapDeleteMax(items);
+	for(int i = 0; i < n; ++i) {
+		item max = heapDeleteMax(items);
+		if(total_w + max.weight <= c) {
+		  	total_w += max.weight;
+			total_v += max.val;
+			opt.push_back(i + 1);
 		}
-
+		else
+			break;
+	}
 	return total_v;
 }
 
@@ -194,7 +186,7 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 	for(unsigned i = 0; i < v.size(); ++i) {
 		it.val = v[i];
 		it.weight = w[i];
-		it.ratio = v[i]/w[i];
+		it.ratio = (double)v[i] / (double)w[i];
 		items.push_back(it);
 	}
 }
@@ -269,18 +261,12 @@ void heapSort(vector<item>& vector, int n)
 	}
 }
 
-//heap delete Max (index 0)
-vector<item> heapDeleteMax(vector<item> vector){
+//heap delete Max (index 0
+item heapDeleteMax(vector<item>& heap){
 	//int s = sizeof(vector);
-	iter_swap(vector.begin(),vector.end());
-	vector.erase(vector.end());
-	heapify(vector, sizeof(vector),0);
-	return vector;
+	item max = heap[0];
+	iter_swap(heap.begin(),heap.end());
+	heap.erase(heap.end() - 1);
+	heapify(heap, sizeof(heap), 0);
+	return max;
 }
-
-
-	//int n = sizeof(arr)/sizeof(arr[0]);
-
-
-
-
