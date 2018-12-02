@@ -14,6 +14,10 @@ struct item {
 	int val, weight, originalIndex;
 	float ratio;
 };
+//Struct for holding vectors to return
+struct vectorHolder{
+    vector<item> heldVector
+};
 
 // Function Prototypes
 int dp(int, vector<int>, vector<int>, int, vector<int>&);
@@ -26,7 +30,7 @@ void heapify (vector<item>&, int n, int i);
 void heapSort (vector<item>&, int n);
 void heapInsert (vector<item>&, item i);
 int heapIndexOf (vector<item>, item i);
-vector<item> heapDeleteMax(vector<item> vector);
+item heapDeleteMax(vector<item> vector);
 
 
 int main() {
@@ -273,7 +277,6 @@ vector<item> heapDeleteMax(vector<item> vector){
 	heapify(vector, sizeof(vector),0);
 	return vector;
 }
-
 
 
 	//int n = sizeof(arr)/sizeof(arr[0]);
