@@ -36,27 +36,29 @@ make clean
 Possible Output
 -----
 ```
-Enter file containing the capacity: c.txt
-Enter file containing the weights: w.txt
-Enter file containing the values: v.txt
+Enter file containing the capacity: p00_c.txt
+Enter file containing the weights: p00_w.txt
+Enter file containing the values: p00_v.txt
 
-Knapsack capacity = 100. Total number of items = 50
+Knapsack capacity = 5. Total number of items = 4
 
-Dynamic Programming Optimal value: 833
-Dynamic Programming Optimal subset: {9 19 20 21 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 47 48 49 50}
-Dynamic Programming Time Taken: 0.000223539
+Dynamic Programming Two-Row Optimal value: 37
+Dynamic Two-Row Programming Time Taken: 1.0236e-05
 
-Greedy Approach Optimal value: 824
-Greedy Approach Optimal subset: {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22}
-Greedy Approach Time Taken: 3.591e-05
+Dynamic Programming Optimal value: 37
+Dynamic Programming Optimal subset: {1 2 4}
+Dynamic Programming Time Taken: 1.1429e-05
 
+Greedy Approach Optimal value: 25
+Greedy Approach Optimal subset: {1 2}
+Greedy Approach Time Taken: 4.585e-06
 ```
 
 and output files
 ```
-dptime.data | greedytime.data
+dptime.txt | greedytime.txt | greedytime1.txt | greedyheap.txt
 ```
 
-after running gnuplot
+after running dp.gnuplot
 
 ![Scatterplot](/scatter.png)
