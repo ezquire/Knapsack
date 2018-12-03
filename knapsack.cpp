@@ -21,9 +21,9 @@ int greedyHeap(int, vector<item>, vector<int>&);
 void getinput(vector<int>&, vector<int>&, int&, vector<item>&, vector<item>&);
 bool greater_than(const struct item&, const struct item&);
 bool less_than(const struct item&, const struct item&);
-void graph(int, vector<int>, vector<int>, int, vector<int>&,
+void graph_dp_greedy(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
-void graph2(int, vector<int>, vector<int>, int, vector<int>&, vector<item>);
+void graph_greedy_heap(int, vector<int>, vector<int>, int, vector<int>&, vector<item>);
 
 int main() {
 	int n = 0;
@@ -66,7 +66,7 @@ int main() {
 		cout << opt[i] << ' ';
 	cout << opt[opt.size() - 1];
 	cout << "}";
-	cout << "\nHeap Greedy Approach Time Taken: " << time.count() << endl;
+	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
 
  	start = high_resolution_clock::now();
@@ -83,10 +83,74 @@ int main() {
 	cout << "\nHeap Greedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector 
 
-	graph(c, v, w, n, opt, it);
-	graph2(c, v, w, n, opt, it);
+	graph_dp_greedy(c, v, w, n, opt, it);
+	graph_greedy_heap(c, v, w, n, opt, it);
 
 	return 0;
+}
+
+void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items,
+			  vector<item>& heap) {
+
+	int val = 0;
+	int weight = 0;
+	item it;
+	string filename;
+	ifstream infile;
+
+	// Get the capacity of the "knapsack"
+	cout << "Enter file containing the capacity: ";
+	cin >> filename;	
+	infile.open(filename.c_str(), ios::in);
+	if(infile.fail()) {
+		cout << "Error opening file: " << filename << endl;
+		exit(-1);
+	}
+	infile >> c;
+	if(c < 1) {
+		cout << "Error: capacity must be > 0\n";
+		infile.close();
+		exit(-1);
+	}
+	infile.close();
+
+	// Get the weights of the items
+	cout << "Enter file containing the weights: ";
+	cin >> filename;
+	infile.open(filename.c_str(), ios::in);
+	if(infile.fail()) {
+		cout << "Error opening file: " << filename << endl;
+		exit(-1);
+	}
+	while(infile >> weight)
+		w.push_back(weight);
+	infile.close();
+
+	// Get the values of the items
+	cout << "Enter file containing the values: ";
+	cin >> filename;
+	infile.open(filename.c_str(), ios::in);
+	if(infile.fail()) {
+		cout << "Error opening file: " << filename << endl;
+		exit(-1);
+	}
+	while(infile >> val)
+		v.push_back(val);
+	infile.close();
+
+	// Check for equal number of values and weights
+	if(v.size() != w.size()) {
+		cout << "Error: the number of values and weights must be equal\n";
+		exit(-1);
+	}
+
+	// add item pairs if # vals and weights are equal
+	for(unsigned i = 0; i < v.size(); ++i) {
+		it.val = v[i];
+		it.weight = w[i];
+		items.push_back(it);
+		heap.push_back(it);
+	}
 }
 
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
@@ -158,70 +222,6 @@ int greedyHeap(int c, vector<item> items, vector<int>& opt) {
 	return total_v;
 }
 
-void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items,
-			  vector<item>& heap) {
-
-	int val = 0;
-	int weight = 0;
-	item it;
-	string filename;
-	ifstream infile;
-
-	// Get the capacity of the "knapsack"
-	cout << "Enter file containing the capacity: ";
-	cin >> filename;	
-	infile.open(filename.c_str(), ios::in);
-	if(infile.fail()) {
-		cout << "Error opening file: " << filename << endl;
-		exit(-1);
-	}
-	infile >> c;
-	if(c < 1) {
-		cout << "Error: capacity must be > 0\n";
-		infile.close();
-		exit(-1);
-	}
-	infile.close();
-
-	// Get the weights of the items
-	cout << "Enter file containing the weights: ";
-	cin >> filename;
-	infile.open(filename.c_str(), ios::in);
-	if(infile.fail()) {
-		cout << "Error opening file: " << filename << endl;
-		exit(-1);
-	}
-	while(infile >> weight)
-		w.push_back(weight);
-	infile.close();
-
-	// Get the values of the items
-	cout << "Enter file containing the values: ";
-	cin >> filename;
-	infile.open(filename.c_str(), ios::in);
-	if(infile.fail()) {
-		cout << "Error opening file: " << filename << endl;
-		exit(-1);
-	}
-	while(infile >> val)
-		v.push_back(val);
-	infile.close();
-
-	// Check for equal number of values and weights
-	if(v.size() != w.size()) {
-		cout << "Error: the number of values and weights must be equal\n";
-		exit(-1);
-	}
-
-	// add item pairs if # vals and weights are equal
-	for(unsigned i = 0; i < v.size(); ++i) {
-		it.val = v[i];
-		it.weight = w[i];
-		items.push_back(it);
-		heap.push_back(it);
-	}
-}
-
 // Ratio comparison utility function
 bool greater_than(const struct item& a, const struct item& b) {
 	double r1 = (double)a.val / (double)a.weight;
@@ -237,8 +237,8 @@ bool less_than(const struct item& a, const struct item& b){
 }
 
 // Graphing utility function
-void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
-		   vector<item> it) {
+void graph_dp_greedy(int c, vector<int> v, vector<int> w, int n,
+					 vector<int>& opt, vector<item> it) {
 	ofstream dptime;
 	ofstream greedytime;
 	dptime.open("dptime.txt", ios::out);
@@ -262,8 +262,8 @@ void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 	}
 }
 
-void graph2(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
-		   vector<item> it) {
+void graph_greedy_heap(int c, vector<int> v, vector<int> w, int n,
+					   vector<int>& opt, vector<item> it) {
 	ofstream greedytime;
 	ofstream greedyheaptime;
 	greedytime.open("greedytime1.txt", ios::out);
