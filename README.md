@@ -23,9 +23,10 @@ Then you can run the knapsack program from the current directory using the execu
 Misc
 -----
 
-To generate the scatter plot based on input data run
+To generate the scatter plots based on input data run
 ```
-gnuplot scatter.gnuplot
+gnuplot dp.gnuplot
+gnuplot heap.gnuplot
 ```
 
 To clear the output files and executables use
