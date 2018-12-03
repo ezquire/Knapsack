@@ -1,4 +1,4 @@
-CXXFLAGS = -g -Wall -Werror -std=c++11
+CXXFLAGS = -g -Wall -Werror -pedantic -std=c++11
 
 srcs = $(wildcard *.cpp)
 
