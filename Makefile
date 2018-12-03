@@ -4,10 +4,10 @@ srcs = $(wildcard *.cpp)
 
 objs = $(srcs:.cpp=.o)
 
-all : knapsack
+all : knapsack ec1 ec2
 
 knapsack : $(objs)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean :
 	rm knapsack *~ *.o dp* greedy*

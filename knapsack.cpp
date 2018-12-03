@@ -16,14 +16,15 @@ struct item {
 
 // Function Prototypes
 int dp(int, vector<int>, vector<int>, int, vector<int>&);
+int dp_two_row(int, vector<int>, vector<int>, int, vector<int>&);
 int greedy(int, vector<item>, vector<int>&);
 int greedyHeap(int, vector<item>, vector<int>&);
-void getinput(vector<int>&, vector<int>&, int&, vector<item>&, vector<item>&);
 bool greater_than(const struct item&, const struct item&);
 bool less_than(const struct item&, const struct item&);
 void graph_dp_greedy(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
 void graph_greedy_heap(int, vector<int>, vector<int>, int, vector<int>&, vector<item>);
+void getinput(vector<int>&, vector<int>&, int&, vector<item>&, vector<item>&);
 
 int main() {
 	int n = 0;
@@ -41,11 +42,18 @@ int main() {
 	cout << v.size() << endl;
 	n = v.size();
 
+	auto two_start = high_resolution_clock::now();
+	int two_res = dp_two_row(c, v, w, n, opt);
+	auto two_end = high_resolution_clock::now();
+	duration<double> two_time = two_end - two_start;
+	cout << "\nDynamic Programming Two-Row Optimal value: " << two_res;
+	cout << "\nDynamic Two-Row Programming Time Taken: " << two_time.count();
+	cout << endl;
+	
  	auto start = high_resolution_clock::now();
 	int res = dp(c, v, w, n, opt);
 	auto end = high_resolution_clock::now();
 	duration<double> time = end - start;
-
 	cout << "\nDynamic Programming Optimal value: " << res;
 	cout << "\nDynamic Programming Optimal subset: {";
 	for(unsigned i = opt.size() - 1; i > 0; --i)
@@ -54,12 +62,11 @@ int main() {
 	cout << "}";
 	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
-
+	
 	start = high_resolution_clock::now();
 	res = greedy(c, it, opt);
 	end = high_resolution_clock::now();
 	time = end - start;
-
 	cout << "\nGreedy Approach Optimal value: " << res;
 	cout << "\nGreedy Approach Optimal subset: {";
 	for(unsigned i = 0; i < opt.size() - 1; ++i)
@@ -68,24 +75,9 @@ int main() {
 	cout << "}";
 	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
-
- 	start = high_resolution_clock::now();
-	res = greedyHeap(c, heap, opt);
-	end = high_resolution_clock::now();
-	time = end - start;
-
-	cout << "\nHeap Greedy Approach Optimal value: " << res;
-	cout << "\nHeap Greedy Approach Optimal subset: {";
-	for(unsigned i = 0; i < opt.size() - 1; ++i)
-		cout << opt[i] << ' ';
-	cout << opt[opt.size() - 1];
-	cout << "}";
-	cout << "\nHeap Greedy Approach Time Taken: " << time.count() << endl;
-	opt.resize(0); // reset optimal subset vector 
-
+	
 	graph_dp_greedy(c, v, w, n, opt, it);
 	graph_greedy_heap(c, v, w, n, opt, it);
-
 	return 0;
 }
 
@@ -155,13 +147,7 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items,
 
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
-	//int k[n + 1][c + 1];
 	vector< vector<int> > k(n + 1, vector<int>(c + 1));
-	// initialize knapsack for DP algorithm
-	for(i = 0; i <= n; ++i)
-		k[i][0] = 0;
-	for(j = 0; j <= c; ++j)
-		k[0][j] = 0;
 
 	// fill knapsack array with values
 	for(i = 1; i <= n; ++i) {
@@ -186,6 +172,24 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 		}
 	}
 	return k[n][c]; // return the optimal value
+}
+
+int dp_two_row(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
+	int i, j;
+	vector< vector<int> > k(2, vector<int>(c + 1));
+
+	// fill knapsack array with values
+	for(i = 0; i < n; ++i) {		
+		for(j = 1; j <= c; ++j) {
+			if( w[i] <= j )
+				k[1][j] = max( k[0][j], (v[i] + k[0][j - w[i]]) );
+			else
+				k[1][j] = k[0][j];
+		}
+		k[0] = k[1];
+		k[1].assign(c + 1, 0);
+	}
+	return k[0][c]; // return the optimal value
 }
 
 int greedy(int c, vector<item> items, vector<int>& opt) {
@@ -222,14 +226,14 @@ int greedyHeap(int c, vector<item> items, vector<int>& opt) {
 	return total_v;
 }
 
-// Ratio comparison utility function
+// Ratio comparison utility function for greedy standard
 bool greater_than(const struct item& a, const struct item& b) {
 	double r1 = (double)a.val / (double)a.weight;
 	double r2 = (double)b.val / (double)b.weight;
 	return r1 > r2;
 }
 
-// Ratio comparison utility function
+// Ratio comparison utility function for greedy with heap
 bool less_than(const struct item& a, const struct item& b){
 	double r1 = (double)a.val / (double)a.weight;
 	double r2 = (double)b.val / (double)b.weight;
