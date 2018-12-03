@@ -7,7 +7,7 @@ objs = $(srcs:.cpp=.o)
 all : knapsack
 
 knapsack : $(objs)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean :
 	rm knapsack *~ *.o dp* greedy*
