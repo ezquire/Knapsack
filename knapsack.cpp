@@ -17,10 +17,13 @@ struct item {
 // Function Prototypes
 int dp(int, vector<int>, vector<int>, int, vector<int>&);
 int greedy(int, vector<item>, vector<int>&);
-void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
-bool cmp(struct item, struct item);
-void graph(int, vector<int>, vector<int>, int, vector<int>&,
+int greedyHeap(int, vector<item>, vector<int>&);
+void getinput(vector<int>&, vector<int>&, int&, vector<item>&, vector<item>&);
+bool greater_than(const struct item&, const struct item&);
+bool less_than(const struct item&, const struct item&);
+void graph_dp_greedy(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
+void graph_greedy_heap(int, vector<int>, vector<int>, int, vector<int>&, vector<item>);
 
 int main() {
 	int n = 0;
@@ -29,8 +32,9 @@ int main() {
 	vector<int> w;
 	vector<int> opt;
 	vector<item> it;
+	vector<item> heap;
 
-	getinput(v, w, c, it);
+	getinput(v, w, c, it, heap);
 	
 	cout << "\nKnapsack capacity = " << c;
 	cout << ". Total number of items = ";
@@ -51,11 +55,11 @@ int main() {
 	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
 
- 	start = high_resolution_clock::now();
+	start = high_resolution_clock::now();
 	res = greedy(c, it, opt);
 	end = high_resolution_clock::now();
 	time = end - start;
-	
+
 	cout << "\nGreedy Approach Optimal value: " << res;
 	cout << "\nGreedy Approach Optimal subset: {";
 	for(unsigned i = 0; i < opt.size() - 1; ++i)
@@ -65,67 +69,28 @@ int main() {
 	cout << "\nGreedy Approach Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
 
-	graph(c, v, w, n, opt, it);
+ 	start = high_resolution_clock::now();
+	res = greedyHeap(c, heap, opt);
+	end = high_resolution_clock::now();
+	time = end - start;
+
+	cout << "\nHeap Greedy Approach Optimal value: " << res;
+	cout << "\nHeap Greedy Approach Optimal subset: {";
+	for(unsigned i = 0; i < opt.size() - 1; ++i)
+		cout << opt[i] << ' ';
+	cout << opt[opt.size() - 1];
+	cout << "}";
+	cout << "\nHeap Greedy Approach Time Taken: " << time.count() << endl;
+	opt.resize(0); // reset optimal subset vector 
+
+	graph_dp_greedy(c, v, w, n, opt, it);
+	graph_greedy_heap(c, v, w, n, opt, it);
 
 	return 0;
 }
 
-int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
-	int i, j;
-	int k[n + 1][c + 1];
-	
-	// initialize knapsack for DP algorithm
-	for(i = 0; i <= n; ++i)
-		k[i][0] = 0;
-	for(j = 0; j <= c; ++j)
-		k[0][j] = 0;
-
-	// fill knapsack array with values
-	for(i = 1; i <= n; ++i) {
-		for(j = 1; j <= c; ++j) {
-			if( w[i - 1] <= j )
-				k[i][j] = max( k[i-1][j], (v[i-1] + k[i-1][j - w[i-1]]) );
-			else
-                 k[i][j] = k[i - 1][j];
-		}
-	}
-	// Backtracking portion to find optimal soln
-	int res = k[n][c]; //optimal value
-	j = c; // start at last column
-	for(i = n; i > 0 && res > 0; --i) { // start at last row 
-		// if the value in the table above is the same don't add it to soln
-		if(res == k[i - 1][j]) 
-			continue;
-		else {
-			// add item's index to the optimal soln
-			opt.push_back(i);
-			// subtract the val of the item from optimal val
-			res -= v[i - 1];
-			// subtract the weight of the item from capacity
-			j -= w[i - 1];
-		}
-	}
-	return k[n][c]; // return the optimal value
-}
-
-int greedy(int c, vector<item> items, vector<int>& opt) {
-	int total_w = 0;
-	int total_v = 0;
-	sort(items.begin(), items.end(), cmp);
-
-	for(unsigned i = 0; i < items.size(); ++i) {
-		if(total_w + items[i].weight <= c) {
-			total_w += items[i].weight;
-			total_v += items[i].val;
-			opt.push_back(i + 1);
-		}
-		else
-			break;
-	}
-	return total_v;
-}
-
-void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
+void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items,
+			  vector<item>& heap) {
 
 	int val = 0;
 	int weight = 0;
@@ -184,19 +149,96 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 		it.val = v[i];
 		it.weight = w[i];
 		items.push_back(it);
+		heap.push_back(it);
 	}
 }
 
+int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
+	int i, j;
+	//int k[n + 1][c + 1];
+	vector< vector<int> > k(n + 1, vector<int>(c + 1));
+	// initialize knapsack for DP algorithm
+	for(i = 0; i <= n; ++i)
+		k[i][0] = 0;
+	for(j = 0; j <= c; ++j)
+		k[0][j] = 0;
+
+	// fill knapsack array with values
+	for(i = 1; i <= n; ++i) {
+		for(j = 1; j <= c; ++j) {
+			if( w[i - 1] <= j )
+				k[i][j] = max( k[i-1][j], (v[i-1] + k[i-1][j - w[i-1]]) );
+			else
+                 k[i][j] = k[i - 1][j];
+		}
+	}
+	// Backtracking portion to find optimal soln
+	int res = k[n][c]; //optimal value
+	j = c; // start at last column
+	for(i = n; i > 0 && res > 0; --i) { // start at last row 
+		// if the value in the table above is the same don't add it to soln
+		if(res == k[i - 1][j]) 
+			continue;
+		else {
+			opt.push_back(i); // add to optimal subset
+			res -= v[i - 1];  // subtract from total values
+			j -= w[i - 1];    // subtract from 
+		}
+	}
+	return k[n][c]; // return the optimal value
+}
+
+int greedy(int c, vector<item> items, vector<int>& opt) {
+	int total_w = 0;
+	int total_v = 0;
+	sort(items.begin(), items.end(), greater_than);
+
+	for(unsigned i = 0; i < items.size(); ++i) {
+		if(total_w + items[i].weight <= c) {
+			total_w += items[i].weight;
+			total_v += items[i].val;
+			opt.push_back(i + 1);
+		}
+		else
+			break;
+	}
+	return total_v;
+}
+
+int greedyHeap(int c, vector<item> items, vector<int>& opt) {
+	int total_w = 0;
+	int total_v = 0;
+	int index = 0;
+	make_heap(items.begin(),items.end(), less_than);
+	while (total_w + items.front().weight <= c) {
+		total_w += items.front().weight;
+		total_v += items.front().val;
+		opt.push_back(index + 1);
+		pop_heap(items.begin(), items.end(), less_than);
+		items.pop_back();
+		make_heap(items.begin(),items.end(), less_than);
+		++index;
+	}
+	return total_v;
+}
+
 // Ratio comparison utility function
-bool cmp(struct item a, struct item b) {
+bool greater_than(const struct item& a, const struct item& b) {
 	double r1 = (double)a.val / (double)a.weight;
 	double r2 = (double)b.val / (double)b.weight;
 	return r1 > r2;
 }
 
+// Ratio comparison utility function
+bool less_than(const struct item& a, const struct item& b){
+	double r1 = (double)a.val / (double)a.weight;
+	double r2 = (double)b.val / (double)b.weight;
+	return r1 < r2;
+}
+
 // Graphing utility function
-void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
-		   vector<item> it) {
+void graph_dp_greedy(int c, vector<int> v, vector<int> w, int n,
+					 vector<int>& opt, vector<item> it) {
 	ofstream dptime;
 	ofstream greedytime;
 	dptime.open("dptime.txt", ios::out);
@@ -217,5 +259,30 @@ void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 		end = high_resolution_clock::now();
 		time = end - start;
 		greedytime << i << " " << time.count() << endl;
+	}
+}
+
+void graph_greedy_heap(int c, vector<int> v, vector<int> w, int n,
+					   vector<int>& opt, vector<item> it) {
+	ofstream greedytime;
+	ofstream greedyheaptime;
+	greedytime.open("greedytime1.txt", ios::out);
+	greedyheaptime.open("greedyheap.txt", ios::out);
+	vector<item> temp;
+	
+	for(int i = 1; i <= n; ++i) {
+		temp.push_back(it[i - 1]); // Build a larger list as we go
+		auto start = high_resolution_clock::now();
+		greedy(c, temp, opt);
+		auto end = high_resolution_clock::now();
+		duration<double> time = end - start;
+		greedytime << i << " " << time.count() << endl;
+		opt.resize(0); // Not really necessary but might be best
+
+		start = high_resolution_clock::now();
+		greedyHeap(c, temp, opt);
+		end = high_resolution_clock::now();
+		time = end - start;
+		greedyheaptime << i << " " << time.count() << endl;
 	}
 }
