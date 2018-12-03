@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include <bits/stdc++.h>
+//#include <stl>
 
 using namespace std;
 using namespace std::chrono;
@@ -19,6 +20,7 @@ int dp(int, vector<int>, vector<int>, int, vector<int>&);
 int greedy(int, vector<item>, vector<int>&);
 void getinput(vector<int>&, vector<int>&, int&, vector<item>&);
 bool cmp(struct item, struct item);
+bool comp(struct item, struct item);
 void graph(int, vector<int>, vector<int>, int, vector<int>&,
 		   vector<item>);
 
@@ -31,13 +33,13 @@ int main() {
 	vector<item> it;
 
 	getinput(v, w, c, it);
-	
+
 	cout << "\nKnapsack capacity = " << c;
 	cout << ". Total number of items = ";
 	cout << v.size() << endl;
 	n = v.size();
 
- 	auto start = high_resolution_clock::now();
+	auto start = high_resolution_clock::now();
 	int res = dp(c, v, w, n, opt);
 	auto end = high_resolution_clock::now();
 	duration<double> time = end - start;
@@ -51,11 +53,11 @@ int main() {
 	cout << "\nDynamic Programming Time Taken: " << time.count() << endl;
 	opt.resize(0); // reset optimal subset vector
 
- 	start = high_resolution_clock::now();
+	start = high_resolution_clock::now();
 	res = greedy(c, it, opt);
 	end = high_resolution_clock::now();
 	time = end - start;
-	
+
 	cout << "\nGreedy Approach Optimal value: " << res;
 	cout << "\nGreedy Approach Optimal subset: {";
 	for(unsigned i = 0; i < opt.size() - 1; ++i)
@@ -73,7 +75,7 @@ int main() {
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
 	int k[n + 1][c + 1];
-	
+
 	// initialize knapsack for DP algorithm
 	for(i = 0; i <= n; ++i)
 		k[i][0] = 0;
@@ -86,15 +88,15 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 			if( w[i - 1] <= j )
 				k[i][j] = max( k[i-1][j], (v[i-1] + k[i-1][j - w[i-1]]) );
 			else
-                 k[i][j] = k[i - 1][j];
+				k[i][j] = k[i - 1][j];
 		}
 	}
 	// Backtracking portion to find optimal soln
 	int res = k[n][c]; //optimal value
 	j = c; // start at last column
-	for(i = n; i > 0 && res > 0; --i) { // start at last row 
+	for(i = n; i > 0 && res > 0; --i) { // start at last row
 		// if the value in the table above is the same don't add it to soln
-		if(res == k[i - 1][j]) 
+		if(res == k[i - 1][j])
 			continue;
 		else {
 			// add item's index to the optimal soln
@@ -111,16 +113,18 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 int greedy(int c, vector<item> items, vector<int>& opt) {
 	int total_w = 0;
 	int total_v = 0;
-	sort(items.begin(), items.end(), cmp);
+	make_heap(items.begin(),items.end(), comp);
 
 	for(unsigned i = 0; i < items.size(); ++i) {
-		if(total_w + items[i].weight <= c) {
+		while (total_w + items[0].weight < c) {
 			total_w += items[i].weight;
 			total_v += items[i].val;
-			opt.push_back(i + 1);
+			opt.push_back(items[0].val);
+			pop_heap(items.begin(), items.end(), comp);
+			items.pop_back();
+			make_heap(items.begin(),items.end(), comp);
+
 		}
-		else
-			break;
 	}
 	return total_v;
 }
@@ -135,7 +139,7 @@ void getinput(vector<int>& v, vector<int>& w, int& c, vector<item>& items) {
 
 	// Get the capacity of the "knapsack"
 	cout << "Enter file containing the capacity: ";
-	cin >> filename;	
+	cin >> filename;
 	infile.open(filename.c_str(), ios::in);
 	if(infile.fail()) {
 		cout << "Error opening file: " << filename << endl;
@@ -194,6 +198,12 @@ bool cmp(struct item a, struct item b) {
 	return r1 > r2;
 }
 
+bool comp(struct item a, struct item b){
+	double r1 = (double)a.val / (double)a.weight;
+	double r2 = (double)b.val / (double)b.weight;
+	return r1 < r2;
+}
+
 // Graphing utility function
 void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 		   vector<item> it) {
@@ -202,7 +212,7 @@ void graph(int c, vector<int> v, vector<int> w, int n, vector<int>& opt,
 	dptime.open("dptime.txt", ios::out);
 	greedytime.open("greedytime.txt", ios::out);
 	vector<item> temp;
-	
+
 	for(int i = 1; i <= n; ++i) {
 		temp.push_back(it[i - 1]); // Build a larger list as we go
 		auto start = high_resolution_clock::now();
