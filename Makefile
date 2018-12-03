@@ -4,7 +4,7 @@ srcs = $(wildcard *.cpp)
 
 objs = $(srcs:.cpp=.o)
 
-all : knapsack ec1 ec2
+all : knapsack
 
 knapsack : $(objs)
 	$(CXX) $(CXXFLAGS) -o $@ $^
