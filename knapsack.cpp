@@ -91,8 +91,8 @@ int main() {
 
 int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 	int i, j;
-	int k[n + 1][c + 1];
-	
+	unsigned long long k[n + 1][c + 1];
+
 	// initialize knapsack for DP algorithm
 	for(i = 0; i <= n; ++i)
 		k[i][0] = 0;
@@ -109,7 +109,7 @@ int dp(int c, vector<int> v, vector<int> w, int n, vector<int>& opt) {
 		}
 	}
 	// Backtracking portion to find optimal soln
-	int res = k[n][c]; //optimal value
+	unsigned long long res = k[n][c]; //optimal value
 	j = c; // start at last column
 	for(i = n; i > 0 && res > 0; --i) { // start at last row 
 		// if the value in the table above is the same don't add it to soln
